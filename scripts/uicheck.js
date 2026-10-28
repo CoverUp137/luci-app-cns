@@ -14,7 +14,7 @@ const form = {
           taboption(tb, cls2, n, ti) { const o = opt(cls2, n, ti); o.tab = tb; return o; },
           option(cls2, n, ti) { return opt(cls2, n, ti); } };
       },
-      render() { return 'ok'; } };
+      render() { return Promise.resolve('ok'); } };
   },
   NamedSection: 'NamedSection', Value: 'Value', DynamicList: 'DynamicList',
   Flag: 'Flag', Button: 'Button', DummyValue: 'DummyValue'
@@ -31,7 +31,8 @@ const ctx = { console, Promise, Object, Array, String, RegExp, Error, Number, JS
 vm.createContext(ctx);
 vm.runInContext('var __ret = (function(){' + src + '})();', ctx);
 const v = ctx.__ret;
-const out = v.render({ cns: { instances: { main: { running: true } } } });
-console.log('render 返回:', JSON.stringify(out));
-console.log('字段数:', opts.length);
-for (const o of opts) console.log('  [' + (o.tab || '-') + ']', o.cls, o.name, '=', o.title);
+Promise.resolve(v.render({ cns: { instances: { main: { running: true } } } })).then(function(out) {
+	console.log('render 返回:', JSON.stringify(out).slice(0, 120));
+	console.log('字段数:', opts.length);
+	for (const o of opts) console.log('  [' + (o.tab || '-') + ']', o.cls, o.name, '=', o.title);
+});

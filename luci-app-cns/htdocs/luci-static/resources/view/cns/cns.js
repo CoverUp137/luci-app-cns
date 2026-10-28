@@ -183,6 +183,9 @@ return view.extend({
 		applyStatus(running);
 		poll.add(function() { return refreshStatus(); }, 5);
 
-		return E('div', {}, [ statusBar, m.render() ]);
+		// m.render() 返回 Promise，等表单出来再和状态条拼一起
+		return m.render().then(function(form) {
+			return E('div', {}, [ statusBar, form ]);
+		});
 	}
 });
