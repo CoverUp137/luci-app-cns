@@ -2,7 +2,7 @@ include $(TOPDIR)/rules.mk
 
 PKG_NAME:=luci-app-cns
 PKG_VERSION:=0.4.3
-PKG_RELEASE:=8
+PKG_RELEASE:=9
 
 PKG_LICENSE:=GPL-2.0
 PKG_MAINTAINER:=CoverUp137 <CoverUp137@users.noreply.github.com>

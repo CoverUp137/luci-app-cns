@@ -55,16 +55,17 @@ log_line() {
 config_summary() {
 	local http tls flags=""
 
-	http="$(uget listen_addr '')"
-	tls="$(uget tls_listen_addr '')"
+	http="$(echo $(uget listen_addr '') | tr ' ' ',')"
+	tls="$(echo $(uget tls_listen_addr '') | tr ' ' ',')"
 
 	[ "$(uget enable_httpdns 1)" = "1" ] && flags="$flags HTTP DNS"
 	[ "$(uget enable_dns_tcp_over_udp 1)" = "1" ] && flags="$flags TCP DNS 转 UDP"
 	[ "$(uget enable_tfo 0)" = "1" ] && flags="$flags TFO"
 	[ -n "$(uget encrypt_password '')" ] && flags="$flags 加密"
+	[ -z "$flags" ] && flags="无额外开关"
 
 	printf '监听 %s ｜ TLS %s ｜ 代理键 %s ｜ %s' \
-		"${http:-无}" "${tls:-关}" "$(uget proxy_key Meng)" "${flags:-无额外开关}"
+		"${http:-无}" "${tls:-关}" "$(uget proxy_key Meng)" "${flags# }"
 }
 
 gen_config() {
@@ -140,7 +141,8 @@ start_service() {
 }
 
 stop_service() {
-	log_line "停止"
+	pgrep -f 'cns -json' >/dev/null 2>&1 && log_line "停止"
+	return 0
 }
 
 service_triggers() {
