@@ -9,7 +9,7 @@ PKG_MAINTAINER:=CoverUp137 <CoverUp137@users.noreply.github.com>
 
 LUCI_TITLE:=LuCI support for CNS
 LUCI_DESCRIPTION:=Web interface for the CNS tunnel proxy server
-LUCI_DEPENDS:=+cns
+LUCI_DEPENDS:=+luci-base +cns
 LUCI_PKGARCH:=all
 
 # 装完/卸完立刻让 LuCI 菜单和 ACL 生效，不用重启

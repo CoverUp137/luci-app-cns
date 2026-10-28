@@ -11,8 +11,10 @@ git clone https://github.com/CoverUp137/cns-openwrt package/cns
 make menuconfig
 ```
 
-在 `Network → Web Servers/Proxies → cns` 和 `LuCI → Applications → luci-app-cns` 里选中，
-然后 `make -j$(nproc)`。架构跟着你的 target 自动走，不用指定。
+在 `LuCI → Applications → luci-app-cns` 勾选就行，`cns` 和 `luci-base` 会自动带上。
+只想装服务端不要界面，就只勾 `Network → Web Servers/Proxies → cns`。
+
+然后 `make -j$(nproc)`，架构跟着你的 target 自动走，不用指定。
 
 需要 feeds/packages（里面有 golang），默认的 `feeds.conf.default` 已经带了。
 也可以用 feed 方式：`src-git cns https://github.com/CoverUp137/cns-openwrt.git`。
