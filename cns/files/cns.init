@@ -115,3 +115,8 @@ start_service() {
 service_triggers() {
 	procd_add_reload_trigger cns
 }
+
+# LuCI 保存 / uci 改动触发的是 reload；没有这个函数的话 rc.common 只会跑 start（等于没反应）
+reload_service() {
+	restart
+}
