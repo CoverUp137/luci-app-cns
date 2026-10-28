@@ -4,7 +4,6 @@
 24.10 及更早用 ipk，25.12 及更新用 apk。
 
 ## 编进固件
-
 ```sh
 cd openwrt
 git clone https://github.com/CoverUp137/cns-openwrt package/cns
@@ -15,8 +14,8 @@ make menuconfig
 
 然后 `make -j$(nproc)`
 
-
-也可以用 feed 方式：`src-git cns https://github.com/CoverUp137/cns-openwrt.git`。
+### feed方式 
+`src-git cns https://github.com/CoverUp137/cns-openwrt.git`
 
 ## 拿编好的包
 
