@@ -7,8 +7,6 @@ USE_PROCD=1
 
 PROG=/usr/bin/cns
 JSON=/var/etc/cns.json
-LOG=/var/log/cns.log
-LOG_MAX=1048576
 
 # 直接 source 本脚本（比如测试时）没有 rc.common 的 jshn，这里补一下
 [ -r /usr/share/libubox/jshn.sh ] && . /usr/share/libubox/jshn.sh
@@ -43,29 +41,6 @@ json_add_uci_list() {
 		[ -n "$v" ] && json_add_string "" "$v"
 	done
 	json_close_array
-}
-
-# 操作日志：只记启动/停止这类动作，cns 自身的输出仍走 syslog
-log_line() {
-	mkdir -p /var/log 2>/dev/null
-	[ -f "$LOG" ] && [ "$(wc -c < "$LOG" 2>/dev/null || echo 0)" -gt "$LOG_MAX" ] && : > "$LOG"
-	echo "$(date '+%Y-%m-%d %H:%M:%S') $*" >> "$LOG"
-}
-
-config_summary() {
-	local http tls flags=""
-
-	http="$(echo $(uget listen_addr '') | tr ' ' ',')"
-	tls="$(echo $(uget tls_listen_addr '') | tr ' ' ',')"
-
-	[ "$(uget enable_httpdns 1)" = "1" ] && flags="$flags HTTP DNS"
-	[ "$(uget enable_dns_tcp_over_udp 1)" = "1" ] && flags="$flags TCP DNS 转 UDP"
-	[ "$(uget enable_tfo 0)" = "1" ] && flags="$flags TFO"
-	[ -n "$(uget encrypt_password '')" ] && flags="$flags 加密"
-	[ -z "$flags" ] && flags="无额外开关"
-
-	printf '监听 %s ｜ TLS %s ｜ 代理键 %s ｜ %s' \
-		"${http:-无}" "${tls:-关}" "$(uget proxy_key Meng)" "${flags# }"
 }
 
 gen_config() {
@@ -127,8 +102,7 @@ start_service() {
 	[ -s "$JSON" ] || { logger -t cns "$JSON 为空"; return 1; }
 
 	procd_open_instance
-	# 正常输出丢掉，只留错误（stderr 进 syslog）；操作日志由 log_line 负责
-	procd_set_param command /bin/sh -c "exec $PROG -json $JSON >/dev/null"
+	procd_set_param command "$PROG" -json "$JSON"
 	# cns 自带一个 fork 守护循环，和 procd 冲突；CHILD_PORC=true 让它直接在当前进程跑
 	procd_set_param env CHILD_PORC=true
 	procd_set_param limits nofile="1048576 1048576"
@@ -136,13 +110,6 @@ start_service() {
 	procd_set_param stdout 1
 	procd_set_param stderr 1
 	procd_close_instance
-
-	log_line "启动  $(config_summary)"
-}
-
-stop_service() {
-	pgrep -f 'cns -json' >/dev/null 2>&1 && log_line "停止"
-	return 0
 }
 
 service_triggers() {
@@ -151,6 +118,5 @@ service_triggers() {
 
 # LuCI 保存 / uci 改动触发的是 reload；没有这个函数的话 rc.common 只会跑 start（等于没反应）
 reload_service() {
-	log_line "配置变更，重新加载"
 	restart
 }

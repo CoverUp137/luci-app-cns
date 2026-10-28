@@ -5,9 +5,6 @@
 			"file": {
 				"/etc/config/cns": [
 					"read"
-				],
-				"/var/log/cns.log": [
-					"read"
 				]
 			},
 			"ubus": {
@@ -29,9 +26,6 @@
 				],
 				"/etc/init.d/cns": [
 					"exec"
-				],
-				"/var/log/cns.log": [
-					"write"
 				]
 			},
 			"ubus": {
