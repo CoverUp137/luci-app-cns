@@ -11,7 +11,7 @@ PKG_MIRROR_HASH:=skip
 
 PKG_LICENSE:=GPL-2.0
 PKG_LICENSE_FILES:=Changes
-PKG_MAINTAINER:=windyday <noreply@github.com>
+PKG_MAINTAINER:=CoverUp137 <CoverUp137@users.noreply.github.com>
 
 PKG_BUILD_DEPENDS:=golang/host
 PKG_BUILD_PARALLEL:=1
