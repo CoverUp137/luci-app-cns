@@ -1,0 +1,14 @@
+{
+	"admin/services/cns": {
+		"title": "CNS 代理",
+		"order": 60,
+		"action": {
+			"type": "view",
+			"path": "cns/cns"
+		},
+		"depends": {
+			"acl": [ "luci-app-cns" ],
+			"uci": { "cns": true }
+		}
+	}
+}

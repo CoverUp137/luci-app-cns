@@ -1,0 +1,25 @@
+{
+	"luci-app-cns": {
+		"description": "Grant access to CNS configuration",
+		"read": {
+			"file": {
+				"/etc/config/cns": [ "read" ]
+			},
+			"ubus": {
+				"service": [ "list" ],
+				"luci": [ "getInitList" ]
+			},
+			"uci": [ "cns" ]
+		},
+		"write": {
+			"file": {
+				"/etc/config/cns": [ "write" ],
+				"/etc/init.d/cns": [ "exec" ]
+			},
+			"ubus": {
+				"luci": [ "setInitAction" ]
+			},
+			"uci": [ "cns" ]
+		}
+	}
+}
