@@ -63,18 +63,18 @@ stage_cns() {
 	d=$1 arch=$2
 	rm -rf "$d"; mkdir -p "$d"
 	install -Dm755 "$BIN/cns-$arch" "$d/usr/bin/cns"
-	install -Dm755 "$ROOT/package/cns/files/cns.init" "$d/etc/init.d/cns"
-	install -Dm644 "$ROOT/package/cns/files/cns.config" "$d/etc/config/cns"
+	install -Dm755 "$ROOT/cns/files/cns.init" "$d/etc/init.d/cns"
+	install -Dm644 "$ROOT/cns/files/cns.config" "$d/etc/config/cns"
 }
 
 stage_luci() {
 	d=$1
 	rm -rf "$d"; mkdir -p "$d"
-	install -Dm644 "$ROOT/package/luci-app-cns/htdocs/luci-static/resources/view/cns/cns.js" \
+	install -Dm644 "$ROOT/luci-app-cns/htdocs/luci-static/resources/view/cns/cns.js" \
 		"$d/www/luci-static/resources/view/cns/cns.js"
-	install -Dm644 "$ROOT/package/luci-app-cns/root/usr/share/luci/menu.d/luci-app-cns.json" \
+	install -Dm644 "$ROOT/luci-app-cns/root/usr/share/luci/menu.d/luci-app-cns.json" \
 		"$d/usr/share/luci/menu.d/luci-app-cns.json"
-	install -Dm644 "$ROOT/package/luci-app-cns/root/usr/share/rpcd/acl.d/luci-app-cns.json" \
+	install -Dm644 "$ROOT/luci-app-cns/root/usr/share/rpcd/acl.d/luci-app-cns.json" \
 		"$d/usr/share/rpcd/acl.d/luci-app-cns.json"
 }
 

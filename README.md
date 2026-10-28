@@ -3,27 +3,23 @@
 [CNS](https://github.com/mmmdbybyd/CNS) 的 OpenWrt 插件，带 LuCI 界面。
 24.10 及更早用 ipk，25.12 及更新用 apk。
 
-## 编译
-
-```sh
-git clone https://github.com/CoverUp137/cns-openwrt
-cd cns-openwrt
-sh scripts/build.sh
-```
-
-包输出到 `dist/`。默认编 x86_64、aarch64、armv7、mipsel，只要一个架构：
-
-```sh
-ARCHS="<你的架构>" sh scripts/build.sh
-```
-
-需要 go 和 docker（docker 只用来生成 apk，没有就只出 ipk）。
-不想本地编的话，在 Actions 里手动跑一次，产物在 Artifacts 里。
-
 ## 编进固件
 
-把 `package/cns`、`package/luci-app-cns` 放进 OpenWrt 源码的 `package/` 下，
-menuconfig 里选中后一起编译。
+```sh
+cd openwrt
+git clone https://github.com/CoverUp137/cns-openwrt package/cns
+make menuconfig
+```
+
+在 `Network → Web Servers/Proxies → cns` 和 `LuCI → Applications → luci-app-cns` 里选中，
+然后 `make -j$(nproc)`。架构跟着你的 target 自动走，不用指定。
+
+需要 feeds/packages（里面有 golang），默认的 `feeds.conf.default` 已经带了。
+也可以用 feed 方式：`src-git cns https://github.com/CoverUp137/cns-openwrt.git`。
+
+## 拿编好的包
+
+Actions 每次推送都会编全架构的 ipk 和 apk，去 Actions 的 Artifacts，或者 Releases 里下。
 
 ## 安装
 
@@ -39,4 +35,4 @@ apk：
 apk add --allow-untrusted cns-<版本>-<架构>.apk luci-app-cns-<版本>-noarch.apk
 ```
 
-装完在 LuCI 的「服务」里就能看到。
+装完在 LuCI 的「服务」里。
