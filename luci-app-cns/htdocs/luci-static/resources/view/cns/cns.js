@@ -73,7 +73,7 @@ function refreshLog() {
 		if (lines.length > LOG_LINES)
 			lines = lines.slice(-LOG_LINES);
 
-		box.textContent = text ? lines.join('\n') : '（还没有日志）';
+		box.textContent = text ? lines.join('\n') : '（还没有操作记录）';
 		box.scrollTop = box.scrollHeight;
 
 		var size = document.getElementById('cns-log-size');
@@ -140,7 +140,7 @@ return view.extend({
 				if (btn)
 					btn.textContent = label;
 
-				return refreshStatus();
+				return refreshStatus().then(refreshLog);
 			});
 		}
 
@@ -257,7 +257,7 @@ return view.extend({
 
 		var logSection = E('div', { 'class': 'cbi-section' }, [
 			E('div', { 'style': 'display:flex;align-items:center;gap:.5em;padding:.7em 1em' }, [
-				E('strong', {}, '运行日志'),
+				E('strong', {}, '操作日志'),
 				E('span', { 'id': 'cns-log-size', 'style': 'opacity:.6;font-size:.85em' }, ''),
 				E('span', { 'style': 'margin-left:auto;display:flex;gap:.4em' }, [
 					E('button', {
