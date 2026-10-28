@@ -1,4 +1,4 @@
-# cns-openwrt
+# luci-app-cns
 
 [CNS](https://github.com/mmmdbybyd/CNS) 的 OpenWrt 插件，带 LuCI 界面。
 24.10 及更早用 ipk，25.12 及更新用 apk。
@@ -11,12 +11,11 @@ git clone https://github.com/CoverUp137/cns-openwrt package/cns
 make menuconfig
 ```
 
-在 `LuCI → Applications → luci-app-cns` 勾选就行，`cns` 和 `luci-base` 会自动带上。
-只想装服务端不要界面，就只勾 `Network → Web Servers/Proxies → cns`。
+在 `LuCI → Applications → luci-app-cns` 勾选就行，依赖会自动勾选。
 
-然后 `make -j$(nproc)`，架构跟着你的 target 自动走，不用指定。
+然后 `make -j$(nproc)`
 
-需要 feeds/packages（里面有 golang），默认的 `feeds.conf.default` 已经带了。
+
 也可以用 feed 方式：`src-git cns https://github.com/CoverUp137/cns-openwrt.git`。
 
 ## 拿编好的包
