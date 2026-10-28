@@ -19,7 +19,8 @@ make menuconfig
 
 ## 拿编好的包
 
-Actions 每次推送都会编全架构的 ipk 和 apk，去 Actions 的 Artifacts，或者 Releases 里下。
+Actions 每次推送都会编全架构的 ipk 和 apk，产物在 Actions 的 Artifacts 里；
+打 `v*` 标签才会发 Release。
 
 ## 安装
 
