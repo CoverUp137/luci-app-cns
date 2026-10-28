@@ -2,7 +2,7 @@ include $(TOPDIR)/rules.mk
 
 PKG_NAME:=cns
 PKG_VERSION:=0.4.3
-PKG_RELEASE:=1
+PKG_RELEASE:=2
 
 PKG_SOURCE_PROTO:=git
 PKG_SOURCE_URL:=https://github.com/mmmdbybyd/CNS.git
@@ -52,6 +52,24 @@ define Package/cns/install
 	$(INSTALL_DIR) $(1)/etc/init.d $(1)/etc/config
 	$(INSTALL_BIN) ./files/cns.init $(1)/etc/init.d/cns
 	$(INSTALL_CONF) ./files/cns.config $(1)/etc/config/cns
+endef
+
+define Package/cns/postinst
+#!/bin/sh
+[ -n "$${IPKG_INSTROOT}" ] || {
+	/etc/init.d/cns enable
+	/etc/init.d/cns restart
+}
+exit 0
+endef
+
+define Package/cns/prerm
+#!/bin/sh
+[ -n "$${IPKG_INSTROOT}" ] || {
+	/etc/init.d/cns stop
+	/etc/init.d/cns disable
+}
+exit 0
 endef
 
 $(eval $(call GoBinPackage,cns))
