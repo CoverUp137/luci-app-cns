@@ -49,6 +49,59 @@ function refreshStatus() {
 	}).catch(function() {});
 }
 
+var LOG = '/var/log/cns.log';
+var LOG_MAX = 1048576;
+var LOG_LINES = 200;
+
+function fmtSize(n) {
+	if (n >= 1048576)
+		return (n / 1048576).toFixed(1) + ' MB';
+	if (n >= 1024)
+		return Math.round(n / 1024) + ' KB';
+	return n + ' B';
+}
+
+function refreshLog() {
+	return fs.read(LOG).catch(function() { return ''; }).then(function(text) {
+		var box = document.getElementById('cns-log');
+
+		if (!box)
+			return;
+
+		var lines = (text || '').split('\n');
+
+		if (lines.length > LOG_LINES)
+			lines = lines.slice(-LOG_LINES);
+
+		box.textContent = text ? lines.join('\n') : '（还没有日志）';
+		box.scrollTop = box.scrollHeight;
+
+		var size = document.getElementById('cns-log-size');
+
+		if (size)
+			size.textContent = text ? fmtSize(text.length) : '';
+	});
+}
+
+function clearLog() {
+	return fs.write(LOG, '').then(function() {
+		ui.addNotification(null, E('p', {}, [ '日志已清空' ]), 'info');
+		return refreshLog();
+	}).catch(function(err) {
+		ui.addNotification(null, E('p', {}, [ '清空失败：' + err.message ]), 'danger');
+	});
+}
+
+// 超过 1MB 自动清空，和 init 脚本里的检查一致
+function autoTrimLog() {
+	return fs.read(LOG).catch(function() { return ''; }).then(function(text) {
+		if ((text || '').length > LOG_MAX)
+			return fs.write(LOG, '').then(function() {
+				ui.addNotification(null, E('p', {}, [ '日志超过 1 MB，已自动清空' ]), 'info');
+			});
+	});
+}
+
 function checkAddr(val) {
 	if (!val || ADDR_RE.test(val))
 		return true;
@@ -65,16 +118,29 @@ return view.extend({
 		var m, s, o;
 		var running = isRunning(data);
 
-		function act(cmd) {
+		function act(cmd, btn) {
+			var label = btn ? btn.textContent : '';
+			var busy = { start: '启动中…', restart: '重启中…', stop: '停止中…' };
+
+			if (btn) {
+				btn.disabled = true;
+				btn.textContent = busy[cmd];
+			}
+
 			return fs.exec('/etc/init.d/cns', [ cmd ]).then(function(res) {
 				if (res.code !== 0)
 					throw new Error((res.stderr || res.stdout || '').trim() || ('退出码 ' + res.code));
 
-				return new Promise(function(resolve) {
-					window.setTimeout(resolve, 1200);
-				}).then(refreshStatus);
+				return new Promise(function(resolve) { setTimeout(resolve, 1500); });
+			}).then(function() {
+				ui.addNotification(null, E('p', {}, [ '已' + { start: '启动', restart: '重启', stop: '停止' }[cmd] ]), 'info');
 			}).catch(function(err) {
 				ui.addNotification(null, E('p', {}, [ '操作失败：' + err.message ]), 'danger');
+			}).finally(function() {
+				if (btn)
+					btn.textContent = label;
+
+				return refreshStatus();
 			});
 		}
 
@@ -83,7 +149,10 @@ return view.extend({
 				'id': 'cns-btn-' + cmd,
 				'class': 'cbi-button ' + style,
 				'disabled': running ? (cmd === 'start') : (cmd !== 'start'),
-				'click': function(ev) { ev.preventDefault(); return act(cmd); }
+				'click': function(ev) {
+					ev.preventDefault();
+					return act(cmd, ev.currentTarget);
+				}
 			}, title);
 		}
 
@@ -93,8 +162,8 @@ return view.extend({
 					E('span', { 'id': 'cns-status', 'class': running ? 'label success' : 'label' },
 						running ? '运行中' : '已停止'),
 					E('span', { 'style': 'margin-left:auto;display:flex;gap:.4em' }, [
-						ctlBtn('启动', 'cbi-button-apply', 'start'),
-						ctlBtn('重启', 'cbi-button-action', 'restart'),
+						ctlBtn('启动', 'cbi-button-positive', 'start'),
+						ctlBtn('重启', 'cbi-button-apply', 'restart'),
 						ctlBtn('停止', 'cbi-button-remove', 'stop')
 					])
 				])
@@ -180,12 +249,40 @@ return view.extend({
 			'需要 root 权限，部分网络环境（如免流线路）可能不适用');
 		o.default = '0';
 
+		var logBox = E('pre', {
+			'id': 'cns-log',
+			'style': 'margin:0;padding:.7em 1em;max-height:22em;overflow:auto;font-size:.8em;line-height:1.5;' +
+				'white-space:pre-wrap;word-break:break-all;background:rgba(0,0,0,.03);border-radius:.3em'
+		}, '加载中…');
+
+		var logSection = E('div', { 'class': 'cbi-section' }, [
+			E('div', { 'style': 'display:flex;align-items:center;gap:.5em;padding:.7em 1em' }, [
+				E('strong', {}, '运行日志'),
+				E('span', { 'id': 'cns-log-size', 'style': 'opacity:.6;font-size:.85em' }, ''),
+				E('span', { 'style': 'margin-left:auto;display:flex;gap:.4em' }, [
+					E('button', {
+						'class': 'cbi-button cbi-button-action',
+						'click': function(ev) { ev.preventDefault(); return refreshLog(); }
+					}, '刷新'),
+					E('button', {
+						'class': 'cbi-button cbi-button-remove',
+						'click': function(ev) { ev.preventDefault(); return clearLog(); }
+					}, '清空')
+				])
+			]),
+			E('div', { 'style': 'padding:0 1em 1em' }, [ logBox ])
+		]);
+
 		applyStatus(running);
 		poll.add(function() { return refreshStatus(); }, 5);
 
-		// m.render() 返回 Promise，等表单出来再和状态条拼一起
+		setTimeout(function() {
+			autoTrimLog().then(refreshLog);
+		}, 300);
+
+		// m.render() 返回 Promise，等表单出来再和状态条、日志拼一起
 		return m.render().then(function(form) {
-			return E('div', {}, [ statusBar, form ]);
+			return E('div', {}, [ statusBar, form, logSection ]);
 		});
 	}
 });

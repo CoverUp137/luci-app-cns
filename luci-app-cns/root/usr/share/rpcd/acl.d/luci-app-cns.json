@@ -3,23 +3,45 @@
 		"description": "Grant access to CNS configuration",
 		"read": {
 			"file": {
-				"/etc/config/cns": [ "read" ]
+				"/etc/config/cns": [
+					"read"
+				],
+				"/var/log/cns.log": [
+					"read"
+				]
 			},
 			"ubus": {
-				"service": [ "list" ],
-				"luci": [ "getInitList" ]
+				"service": [
+					"list"
+				],
+				"luci": [
+					"getInitList"
+				]
 			},
-			"uci": [ "cns" ]
+			"uci": [
+				"cns"
+			]
 		},
 		"write": {
 			"file": {
-				"/etc/config/cns": [ "write" ],
-				"/etc/init.d/cns": [ "exec" ]
+				"/etc/config/cns": [
+					"write"
+				],
+				"/etc/init.d/cns": [
+					"exec"
+				],
+				"/var/log/cns.log": [
+					"write"
+				]
 			},
 			"ubus": {
-				"luci": [ "setInitAction" ]
+				"luci": [
+					"setInitAction"
+				]
 			},
-			"uci": [ "cns" ]
+			"uci": [
+				"cns"
+			]
 		}
 	}
 }

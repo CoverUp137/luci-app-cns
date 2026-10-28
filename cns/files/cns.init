@@ -7,6 +7,8 @@ USE_PROCD=1
 
 PROG=/usr/bin/cns
 JSON=/var/etc/cns.json
+LOG=/var/log/cns.log
+LOG_MAX=1048576
 
 # 直接 source 本脚本（比如测试时）没有 rc.common 的 jshn，这里补一下
 [ -r /usr/share/libubox/jshn.sh ] && . /usr/share/libubox/jshn.sh
@@ -101,8 +103,13 @@ start_service() {
 	gen_config || { logger -t cns "生成 $JSON 失败"; return 1; }
 	[ -s "$JSON" ] || { logger -t cns "$JSON 为空"; return 1; }
 
+	# 日志超过 1MB 就清空
+	touch "$LOG" 2>/dev/null
+	[ "$(wc -c < "$LOG" 2>/dev/null || echo 0)" -gt "$LOG_MAX" ] && : > "$LOG"
+
 	procd_open_instance
-	procd_set_param command "$PROG" -json "$JSON"
+	# 输出进 /var/log/cns.log（/var 是 tmpfs，不磨损闪存）；exec 让 pid 仍是 cns 自己
+	procd_set_param command /bin/sh -c "exec $PROG -json $JSON >> $LOG 2>&1"
 	# cns 自带一个 fork 守护循环，和 procd 冲突；CHILD_PORC=true 让它直接在当前进程跑
 	procd_set_param env CHILD_PORC=true
 	procd_set_param limits nofile="1048576 1048576"

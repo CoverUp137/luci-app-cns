@@ -21,11 +21,12 @@ const form = {
 };
 const mods = {
   view: { extend: o => o }, form,
-  fs: { exec: () => Promise.resolve({ code: 0, stdout: '', stderr: '' }) },
+  fs: { exec: () => Promise.resolve({ code: 0, stdout: '', stderr: '' }),
+       read: () => Promise.resolve(''), write: () => Promise.resolve() },
   rpc: { declare: () => () => Promise.resolve({}) },
   ui: { addNotification() {} }, poll: { add() {} }
 };
-const ctx = { console, Promise, Object, Array, String, RegExp, Error, Number, JSON,
+const ctx = { console, Promise, Object, Array, String, RegExp, Error, Number, JSON, setTimeout: (fn) => { fn(); return 0; },
   document: { getElementById: () => null },
   E: (t, a, c) => ({ t, a, c }), require: n => mods[n] || {} };
 vm.createContext(ctx);
