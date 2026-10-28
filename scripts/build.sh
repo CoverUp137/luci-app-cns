@@ -4,7 +4,7 @@ set -eu
 
 ROOT=$(cd "$(dirname "$0")/.." && pwd)
 VERSION=${VERSION:-0.4.3}
-RELEASE=${RELEASE:-4}
+RELEASE=${RELEASE:-5}
 MAINTAINER=${MAINTAINER:-"CoverUp137 <CoverUp137@users.noreply.github.com>"}
 CNS_REPO=${CNS_REPO:-https://github.com/mmmdbybyd/CNS.git}
 CNS_COMMIT=${CNS_COMMIT:-5077eacdc2de49104fe2564b0607e06ba621102c}

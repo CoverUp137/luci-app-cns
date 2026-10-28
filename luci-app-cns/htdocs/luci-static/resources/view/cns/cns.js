@@ -24,21 +24,28 @@ function isRunning(res) {
 	return Object.keys(inst).some(function(k) { return inst[k] && inst[k].running; });
 }
 
-function statusHtml(running) {
-	if (running)
-		return '<span class="label success">运行中</span>';
+function applyStatus(running) {
+	var el = document.getElementById('cns-status');
 
-	return '<span class="label warning">已停止</span>';
+	if (el) {
+		el.className = running ? 'label success' : 'label';
+		el.textContent = running ? '运行中' : '已停止';
+	}
+
+	['start', 'restart', 'stop'].forEach(function(cmd) {
+		var btn = document.getElementById('cns-btn-' + cmd);
+
+		if (btn)
+			btn.disabled = running ? (cmd === 'start') : (cmd !== 'start');
+	});
 }
 
 function refreshStatus() {
-	var el = document.getElementById('cns-status');
-
-	if (!el)
+	if (!document.getElementById('cns-status'))
 		return Promise.resolve();
 
 	return callServiceList('cns', true).then(function(res) {
-		el.innerHTML = statusHtml(isRunning(res));
+		applyStatus(isRunning(res));
 	}).catch(function() {});
 }
 
@@ -63,45 +70,47 @@ return view.extend({
 				if (res.code !== 0)
 					throw new Error((res.stderr || res.stdout || '').trim() || ('退出码 ' + res.code));
 
-				return refreshStatus();
+				return new Promise(function(resolve) {
+					window.setTimeout(resolve, 1200);
+				}).then(refreshStatus);
 			}).catch(function(err) {
 				ui.addNotification(null, E('p', {}, [ '操作失败：' + err.message ]), 'danger');
 			});
 		}
 
+		function ctlBtn(title, style, cmd) {
+			return E('button', {
+				'id': 'cns-btn-' + cmd,
+				'class': 'cbi-button ' + style,
+				'disabled': running ? (cmd === 'start') : (cmd !== 'start'),
+				'click': function(ev) { ev.preventDefault(); return act(cmd); }
+			}, title);
+		}
+
+		var statusBar = E('div', { 'class': 'cbi-section' }, [
+			E('div', { 'class': 'cbi-section-node' }, [
+				E('div', { 'style': 'display:flex;align-items:center;gap:.6em;flex-wrap:wrap;padding:.7em 1em' }, [
+					E('span', { 'id': 'cns-status', 'class': running ? 'label success' : 'label' },
+						running ? '运行中' : '已停止'),
+					E('span', { 'style': 'margin-left:auto;display:flex;gap:.4em' }, [
+						ctlBtn('启动', 'cbi-button-apply', 'start'),
+						ctlBtn('重启', 'cbi-button-action', 'restart'),
+						ctlBtn('停止', 'cbi-button-remove', 'stop')
+					])
+				])
+			])
+		]);
+
 		m = new form.Map('cns', 'CNS 代理服务端',
-			'CuteBi Network Server：HTTP/TLS 隧道代理 + HTTP DNS，需要配合 CLNC 客户端使用。');
+			'HTTP/TLS 隧道代理 + HTTP DNS，配合 CLNC 客户端使用。');
 
 		s = m.section(form.NamedSection, 'main', 'cns');
 		s.anonymous = true;
 		s.addremove = false;
 
-		s.tab('status', '运行状态');
 		s.tab('basic', '基本');
 		s.tab('tls', 'TLS');
 		s.tab('misc', '其它');
-
-		/* 运行状态 */
-		o = s.taboption('status', form.DummyValue, '_status', '服务状态');
-		o.rawhtml = true;
-		o.cfgvalue = function() {
-			return '<span id="cns-status">' + statusHtml(running) + '</span>';
-		};
-
-		o = s.taboption('status', form.Button, '_start', '启动');
-		o.inputtitle = '启动';
-		o.inputstyle = 'apply';
-		o.onclick = function() { return act('start'); };
-
-		o = s.taboption('status', form.Button, '_restart', '重启');
-		o.inputtitle = '重启';
-		o.inputstyle = 'apply';
-		o.onclick = function() { return act('restart'); };
-
-		o = s.taboption('status', form.Button, '_stop', '停止');
-		o.inputtitle = '停止';
-		o.inputstyle = 'reset';
-		o.onclick = function() { return act('stop'); };
 
 		/* 基本 */
 		o = s.taboption('basic', form.DynamicList, 'listen_addr', '监听地址',
@@ -171,8 +180,9 @@ return view.extend({
 			'需要 root 权限，部分网络环境（如免流线路）可能不适用');
 		o.default = '0';
 
+		applyStatus(running);
 		poll.add(function() { return refreshStatus(); }, 5);
 
-		return m.render();
+		return E('div', {}, [ statusBar, m.render() ]);
 	}
 });
