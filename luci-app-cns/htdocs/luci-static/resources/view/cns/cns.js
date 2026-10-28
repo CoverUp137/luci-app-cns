@@ -110,12 +110,12 @@ return view.extend({
 		o.rmempty = false;
 		o.validate = function(section_id, value) { return checkAddr(value); };
 
-		o = s.taboption('basic', form.Value, 'proxy_key', '目标地址字段',
-			'从请求头的哪个字段里取目标地址，默认 Host，客户端要填同样的值，一般不用改');
-		o.default = 'Host';
+		o = s.taboption('basic', form.Value, 'proxy_key', '代理键',
+			'proxy_key：请求头里用来取目标地址的字段名，默认 Meng，要和客户端填的一致');
+		o.default = 'Meng';
 		o.rmempty = false;
 		o.validate = function(section_id, value) {
-			if (!value || value === 'Host')
+			if (!value)
 				return true;
 			if (/^[A-Za-z0-9-]+$/.test(value))
 				return true;

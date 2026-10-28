@@ -56,7 +56,7 @@ gen_config() {
 
 	[ "$(ulist_count listen_addr)" -gt 0 ] && json_add_uci_list Listen_addr listen_addr
 
-	json_add_string Proxy_key "$(uget proxy_key Host)"
+	json_add_string Proxy_key "$(uget proxy_key Meng)"
 	json_add_string Udp_flag "$(uget udp_flag httpUDP)"
 	json_add_string Encrypt_password "$(uget encrypt_password '')"
 	json_add_string Pid_path /var/run/cns.pid
