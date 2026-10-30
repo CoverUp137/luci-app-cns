@@ -6,7 +6,7 @@
 ## 编进固件
 ```sh
 cd openwrt
-git clone https://github.com/CoverUp137/cns-openwrt package/cns
+git clone https://github.com/CoverUp137/luci-app-cns package/cns
 make menuconfig
 ```
 
@@ -15,7 +15,7 @@ make menuconfig
 然后 `make -j$(nproc)`
 
 ### feed方式 
-`src-git cns https://github.com/CoverUp137/cns-openwrt.git`
+`src-git cns https://github.com/CoverUp137/luci-app-cns.git`
 
 ## 拿编好的包
 
