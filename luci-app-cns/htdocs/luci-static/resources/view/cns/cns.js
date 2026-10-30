@@ -74,7 +74,17 @@ return view.extend({
 				btn.textContent = busy[cmd];
 			}
 
-			return fs.exec('/etc/init.d/cns', [ cmd ]).then(function(res) {
+			var run = (cmd === 'start')
+				? fs.exec('/etc/init.d/cns', [ 'enable' ]).then(function() {
+					return fs.exec('/etc/init.d/cns', [ 'start' ]);
+				})
+				: (cmd === 'stop')
+					? fs.exec('/etc/init.d/cns', [ 'stop' ]).then(function() {
+						return fs.exec('/etc/init.d/cns', [ 'disable' ]);
+					})
+					: fs.exec('/etc/init.d/cns', [ cmd ]);
+
+			return run.then(function(res) {
 				if (res.code !== 0)
 					throw new Error((res.stderr || res.stdout || '').trim() || ('退出码 ' + res.code));
 

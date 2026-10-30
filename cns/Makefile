@@ -2,7 +2,7 @@ include $(TOPDIR)/rules.mk
 
 PKG_NAME:=cns
 PKG_VERSION:=0.4.3
-PKG_RELEASE:=10
+PKG_RELEASE:=11
 
 PKG_SOURCE_PROTO:=git
 PKG_SOURCE_URL:=https://github.com/mmmdbybyd/CNS.git
@@ -56,9 +56,10 @@ endef
 
 define Package/cns/postinst
 #!/bin/sh
+# 装完不自动启动，也不设开机自启；在 LuCI 里点启动才会 enable
 [ -n "$${IPKG_INSTROOT}" ] || {
-	/etc/init.d/cns enable
-	/etc/init.d/cns restart
+	/etc/init.d/cns stop 2>/dev/null
+	/etc/init.d/cns disable 2>/dev/null
 }
 exit 0
 endef

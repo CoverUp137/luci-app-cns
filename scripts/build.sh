@@ -4,7 +4,7 @@ set -eu
 
 ROOT=$(cd "$(dirname "$0")/.." && pwd)
 VERSION=${VERSION:-0.4.3}
-RELEASE=${RELEASE:-10}
+RELEASE=${RELEASE:-11}
 MAINTAINER=${MAINTAINER:-"CoverUp137 <CoverUp137@users.noreply.github.com>"}
 CNS_REPO=${CNS_REPO:-https://github.com/mmmdbybyd/CNS.git}
 CNS_COMMIT=${CNS_COMMIT:-5077eacdc2de49104fe2564b0607e06ba621102c}
@@ -151,9 +151,10 @@ mkdir -p "$OUT" "$BIN" "$ROOT/build/scripts/cns" "$ROOT/build/scripts/luci-app-c
 
 cat > "$ROOT/build/scripts/cns/postinst" <<'EOF'
 #!/bin/sh
+# 装完不自动启动，也不设开机自启；在 LuCI 里点启动才会 enable
 [ -n "${IPKG_INSTROOT}" ] || {
-	/etc/init.d/cns enable
-	/etc/init.d/cns restart
+	/etc/init.d/cns stop 2>/dev/null
+	/etc/init.d/cns disable 2>/dev/null
 }
 exit 0
 EOF
